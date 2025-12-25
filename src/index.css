@@ -1,13 +1,16 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer utilities {
+  /* Text appear animation */
+  @keyframes textAppear {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-text-appear { animation: textAppear 1s ease-out forwards; }
+  .animate-text-appear-delay { animation: textAppear 1s ease-out 0.5s forwards; }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  /* Loading bar animation */
+  @keyframes loadingBar {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+  .animate-loading-bar { animation: loadingBar 4.5s linear forwards; }
 }
