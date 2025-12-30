@@ -1,15 +1,63 @@
 import { useNavigate } from "react-router-dom";
-import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaRocket, FaHome, FaProjectDiagram, FaChartLine, FaEnvelope, FaPhone, FaMapMarkerAlt, FaUserShield } from "react-icons/fa";
+import { 
+  FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, 
+  FaRocket, FaHome, FaProjectDiagram, FaChartLine, 
+  FaEnvelope, FaPhone, FaMapMarkerAlt, FaUserShield,
+  FaSignInAlt, FaSignOutAlt, FaInfoCircle, FaUsers, FaBriefcase
+} from "react-icons/fa";
+import { useState, useEffect } from "react";
 
 export default function Footer() {
   const navigate = useNavigate();
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+
+  // Check authentication status on component mount and when it changes
+  useEffect(() => {
+    checkAuthStatus();
+    
+    // Listen for storage changes (for logout/login from other tabs)
+    const handleStorageChange = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Function to check if user is authenticated
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem("adminToken");
+    const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+    setIsAdminLoggedIn(!!(token && adminUser.role === "admin"));
+  };
 
   // Navigation handlers
-  const goToDashboard = () => navigate("/dashboard");
   const goToHome = () => navigate("/");
-  const goToAddProject = () => navigate("/dashboard/add-project");
-  const goToInvest = () => navigate("/dashboard/invest");
+  const goToAbout = () => navigate("/InfoSection");
+  const goToProjects = () => navigate("/projects");
   const goToContact = () => navigate("/contact");
+
+  // Admin navigation - redirects to login if not authenticated
+  const goToDashboard = () => {
+    if (isAdminLoggedIn) {
+      navigate("/dashboard");
+    } else {
+      navigate("/admin/login");
+    }
+  };
+
+  // Direct login navigation
+  const goToAdminLogin = () => {
+    navigate("/admin/login");
+  };
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUser");
+    setIsAdminLoggedIn(false);
+    navigate("/");
+  };
 
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900 text-white overflow-hidden">
@@ -39,36 +87,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-xl font-bold mb-6 text-emerald-400">روابط سريعة</h4>
-            <ul className="space-y-3">
-              <li>
-                <button onClick={goToHome} className="flex items-center gap-2 text-gray-300 hover:text-emerald-400 hover:translate-x-2 transition-all duration-300 cursor-pointer bg-transparent border-none group">
-                  <FaHome className="group-hover:scale-110 transition-transform" />
-                  <span>الرئيسية</span>
-                </button>
-              </li>
-              <li>
-                <button onClick={goToAddProject} className="flex items-center gap-2 text-gray-300 hover:text-emerald-400 hover:translate-x-2 transition-all duration-300 cursor-pointer bg-transparent border-none group">
-                  <FaProjectDiagram className="group-hover:scale-110 transition-transform" />
-                  <span>إضافة مشروع</span>
-                </button>
-              </li>
-              <li>
-                <button onClick={goToInvest} className="flex items-center gap-2 text-gray-300 hover:text-emerald-400 hover:translate-x-2 transition-all duration-300 cursor-pointer bg-transparent border-none group">
-                  <FaChartLine className="group-hover:scale-110 transition-transform" />
-                  <span>الاستثمار</span>
-                </button>
-              </li>
-              <li>
-                <button onClick={goToContact} className="flex items-center gap-2 text-gray-300 hover:text-emerald-400 hover:translate-x-2 transition-all duration-300 cursor-pointer bg-transparent border-none group">
-                  <FaEnvelope className="group-hover:scale-110 transition-transform" />
-                  <span>اتصل بنا</span>
-                </button>
-              </li>
-            </ul>
-          </div>
+      
 
           {/* Contact Info */}
           <div>
@@ -89,10 +108,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Social Media */}
+          {/* Social Media & Admin Access */}
           <div>
             <h4 className="text-xl font-bold mb-6 text-emerald-400">تابعنا</h4>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-8">
               <a href="#" className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-emerald-800 hover:from-emerald-500 hover:to-emerald-700 rounded-xl flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 hover:-translate-y-1 group">
                 <FaFacebookF className="text-white text-lg group-hover:scale-110 transition-transform" />
               </a>
@@ -106,6 +125,38 @@ export default function Footer() {
                 <FaInstagram className="text-white text-lg group-hover:scale-110 transition-transform" />
               </a>
             </div>
+
+            {/* Admin Access Section - Icon only */}
+            <div className="mt-6">
+              {isAdminLoggedIn ? (
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={goToDashboard}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 hover:scale-105 group"
+                    title="لوحة التحكم"
+                  >
+                    <FaUserShield className="text-xl group-hover:rotate-12 transition-transform duration-300" />
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition-all duration-300 shadow-lg hover:scale-105"
+                    title="تسجيل الخروج"
+                  >
+                    <FaSignOutAlt className="text-lg" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <button
+                    onClick={goToAdminLogin}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 hover:scale-105 group"
+                    title="تسجيل دخول المشرف"
+                  >
+                    <FaSignInAlt className="text-xl group-hover:rotate-12 transition-transform duration-300" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -114,18 +165,40 @@ export default function Footer() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-sm text-center md:text-right">
-            © 2025 منصتنا. جميع الحقوق محفوظة.
-            <br />
-            © 2025 Ashrik Maana
-          </p>
+          <div className="text-center md:text-right">
+            <p className="text-gray-400 text-sm">
+            
+              © 2025 Ashrik Maana
+            </p>
+          </div>
 
-          <button
-            onClick={goToDashboard}
-            className="group mt-2 md:mt-0 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 hover:scale-105 flex items-center gap-3"
-          >
-            <FaUserShield className="text-xl group-hover:rotate-12 transition-transform duration-300" />
-          </button>
+          {/* Admin Access Button - Icon only */}
+          <div className="flex items-center gap-4">
+            {isAdminLoggedIn && (
+              <button
+                onClick={handleLogout}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition-all duration-300 shadow-lg hover:scale-105"
+                title="تسجيل الخروج"
+              >
+                <FaSignOutAlt />
+              </button>
+            )}
+            {/* <button
+              onClick={isAdminLoggedIn ? goToDashboard : goToAdminLogin}
+              className={`group w-10 h-10 flex items-center justify-center rounded-lg text-white transition-all duration-300 shadow-lg hover:scale-105 ${
+                isAdminLoggedIn 
+                  ? 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 hover:shadow-emerald-500/50'
+                  : 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 hover:shadow-emerald-500/50'
+              }`}
+              title={isAdminLoggedIn ? "لوحة التحكم" : "دخول المشرف"}
+            >
+              {isAdminLoggedIn ? (
+                <FaUserShield className="text-lg group-hover:rotate-12 transition-transform duration-300" />
+              ) : (
+                <FaSignInAlt className="text-lg group-hover:rotate-12 transition-transform duration-300" />
+              )}
+            </button> */}
+          </div>
         </div>
       </div>
 

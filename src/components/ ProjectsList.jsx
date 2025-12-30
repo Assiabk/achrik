@@ -1,349 +1,518 @@
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { FaFilePdf, FaDownload, FaProjectDiagram, FaMoneyCheckAlt } from "react-icons/fa";
-import DashboardLayout from "../layouts/DashboardLayout";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
-// Projects data
-const projects = [
-  {
-    id: 1,
-    title: "مشروع صناعة الحليب",
-    description: "مشروع فلاحي لإنتاج وتوزيع الحليب.",
-    daysLeft: 25,
-    budget: "500,000 د.ج",
-    status: "نشط",
-    owner: "مالك 1",
-    progress: 65
-  },
-  {
-    id: 2,
-    title: "شركة خدمات رقمية",
-    description: "منصة رقمية للشركات الناشئة.",
-    daysLeft: 12,
-    budget: "300,000 د.ج",
-    status: "نشط",
-    owner: "مالك 2",
-    progress: 85
-  },
-  {
-    id: 3,
-    title: "مشروع تجاري صغير",
-    description: "متجر إلكتروني لتسويق المنتجات المحلية.",
-    daysLeft: 18,
-    budget: "150,000 د.ج",
-    status: "مكتمل",
-    owner: "مالك 3",
-    progress: 100
-  },
-];
-
-const investors = [
-  { id: 1, investment: "200,000 د.ج", projects: 2 },
-  { id: 2, investment: "150,000 د.ج", projects: 1 },
-  { id: 3, investment: "300,000 د.ج", projects: 3 },
-];
-
-const stats = [
-  { title: "إجمالي المشاريع", value: projects.length, color: "from-emerald-500 to-emerald-600" },
-  { title: "مكتملة", value: projects.filter(p => p.status === "مكتمل").length, color: "from-amber-500 to-amber-600" },
-  { title: "نشطة", value: projects.filter(p => p.status === "نشط").length, color: "from-blue-500 to-blue-600" },
-  { title: "المستثمرين", value: investors.length, color: "from-violet-500 to-violet-600" },
-];
+import { useState, useEffect, useRef } from "react";
+import { Users, Shield, Database, RefreshCw, AlertCircle, Loader2, Briefcase, Download, Trash2, User, Phone, Mail, UserCheck } from "lucide-react";
 
 export default function ProjectsList() {
-  // Chart Data with minimal curve
-  const chartData = {
-    labels: ["يناير", "فبراير", "مارس", "أبريل", "مايو"],
-    datasets: [
-      {
-        label: "المشاريع",
-        data: [3, 2, 5, 4, 6],
-        fill: false,
-        backgroundColor: "#10B981",
-        borderColor: "#10B981",
-        borderWidth: 3,
-        pointBackgroundColor: "#10B981",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-        pointRadius: 6,
-        tension: 0.1, // Minimal curve
-      },
-    ],
-  };
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalAdmins, setTotalAdmins] = useState(0);
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [usersList, setUsersList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, userId: null, userName: "" });
+  const isMounted = useRef(true);
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { 
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1F2937',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-        borderColor: '#10B981',
-        borderWidth: 1,
-        cornerRadius: 8,
+  useEffect(() => {
+    isMounted.current = true;
+    fetchCounts();
+    fetchUsers();
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const fetchCounts = async () => {
+    console.log("Starting fetchCounts...");
+    setErrorMessage("");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        setErrorMessage("No token found. Please login.");
+        return;
       }
-    },
-    scales: { 
-      y: { 
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        ticks: {
-          color: '#6B7280',
-        }
-      },
-      x: {
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        ticks: {
-          color: '#6B7280',
-        }
+
+      console.log("Using token:", token);
+
+      // Fetch users
+      const usersResponse = await fetch("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const usersData = await usersResponse.json();
+      console.log("Users API response:", usersData);
+
+      if (!usersResponse.ok || !usersData.success) {
+        throw new Error(usersData.message || "Failed to fetch users");
       }
-    },
+
+      // Fetch admins
+      const adminsResponse = await fetch("http://localhost:5000/api/admins", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const adminsData = await adminsResponse.json();
+      console.log("Admins API response:", adminsData);
+
+      if (!adminsResponse.ok || !adminsData.success) {
+        throw new Error(adminsData.message || "Failed to fetch admins");
+      }
+
+      // Fetch projects
+      const projectsResponse = await fetch("http://localhost:5000/api/projects", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const projectsData = await projectsResponse.json();
+      console.log("Projects API response:", projectsData);
+
+      if (!projectsResponse.ok || !projectsData.success) {
+        throw new Error(projectsData.message || "Failed to fetch projects");
+      }
+
+      if (isMounted.current) {
+        setTotalUsers(usersData.users.length);
+        setTotalAdmins(adminsData.admins.length);
+        setTotalProjects(projectsData.projects.length);
+        console.log(`Counts updated: users=${usersData.users.length}, admins=${adminsData.admins.length}, projects=${projectsData.projects.length}`);
+      }
+    } catch (err) {
+      console.error("fetchCounts error:", err);
+      if (isMounted.current) {
+        setErrorMessage(err.message);
+        setTotalUsers(0);
+        setTotalAdmins(0);
+        setTotalProjects(0);
+      }
+    }
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    const date = new Date().toLocaleDateString('ar-EG');
-    
-    doc.setFontSize(18);
-    doc.setTextColor(16, 185, 129);
-    doc.text("تقرير المشاريع", doc.internal.pageSize.width / 2, 25, { align: 'center' });
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`تاريخ: ${date}`, doc.internal.pageSize.width / 2, 35, { align: 'center' });
-    
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(20, 40, doc.internal.pageSize.width - 20, 40);
-    
-    doc.autoTable({
-      startY: 45,
-      head: [['المشروع', 'الحالة', 'الميزانية', 'التقدم']],
-      body: projects.map(p => [p.title, p.status, p.budget, `${p.progress}%`]),
-      theme: 'striped',
-      styles: { 
-        font: 'helvetica', 
-        fontSize: 10, 
-        textAlign: 'right',
-        cellPadding: 5,
-      },
-      headStyles: { 
-        fillColor: [16, 185, 129], 
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-      },
-      alternateRowStyles: {
-        fillColor: [249, 250, 251]
-      },
-    });
-    
-    doc.save(`مشاريع-${date}.pdf`);
+  const fetchUsers = async () => {
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        setErrorMessage("No token found. Please login.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to fetch users list");
+      }
+
+      if (isMounted.current) {
+        // Filter out password field for security
+        const usersWithoutPassword = data.users.map(user => {
+          const { password, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        });
+        setUsersList(usersWithoutPassword);
+      }
+    } catch (err) {
+      console.error("fetchUsers error:", err);
+      if (isMounted.current) {
+        setErrorMessage(err.message);
+        setUsersList([]);
+      }
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
   };
 
-  const exportProjects = () => {
-    const doc = new jsPDF();
-    doc.text("المشاريع", 20, 20);
-    doc.autoTable({
-      startY: 30,
-      head: [['المشروع', 'الحالة', 'الميزانية', 'التقدم']],
-      body: projects.map(p => [p.title, p.status, p.budget, `${p.progress}%`]),
+  const showDeleteConfirm = (userId, userName) => {
+    setDeleteConfirm({
+      show: true,
+      userId,
+      userName
     });
-    doc.save('المشاريع.pdf');
   };
 
-  const exportInvestors = () => {
-    const doc = new jsPDF();
-    doc.text("المستثمرين", 20, 20);
-    doc.autoTable({
-      startY: 30,
-      head: [['المستثمر', 'الإستثمار', 'المشاريع']],
-      body: investors.map((inv, i) => [`مستثمر ${i + 1}`, inv.investment, inv.projects]),
-    });
-    doc.save('المستثمرين.pdf');
+  const hideDeleteConfirm = () => {
+    setDeleteConfirm({ show: false, userId: null, userName: "" });
+  };
+
+  const handleDeleteUser = async () => {
+    const { userId, userName } = deleteConfirm;
+    
+    if (!userId) return;
+
+    setDeleteLoading(prev => ({ ...prev, [userId]: true }));
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+        method: "DELETE",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        },
+      });
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to delete user");
+      }
+
+      // Update users list
+      setUsersList(prev => prev.filter(user => user._id !== userId));
+      setTotalUsers(prev => prev - 1);
+      
+      // Show success message
+      setErrorMessage("");
+      setDeleteConfirm({ show: false, userId: null, userName: "" });
+    } catch (err) {
+      console.error("Delete user error:", err);
+      setErrorMessage(`فشل في حذف المستخدم: ${err.message}`);
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [userId]: false }));
+      setDeleteConfirm({ show: false, userId: null, userName: "" });
+    }
+  };
+
+  const downloadCSV = () => {
+    if (usersList.length === 0) {
+      setErrorMessage("لا توجد بيانات للتحميل");
+      return;
+    }
+
+    // Prepare CSV content
+    const headers = ["الاسم", "البريد الإلكتروني", "الهاتف", "الدور", "معرف المستخدم"];
+    const rows = usersList.map(user => [
+      `"${user.name || ""}"`,
+      `"${user.email || ""}"`,
+      `"${user.phone || ""}"`,
+      `"${user.role || ""}"`,
+      `"${user._id || ""}"`
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    // Create blob and download link
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `users_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadJSON = () => {
+    if (usersList.length === 0) {
+      setErrorMessage("لا توجد بيانات للتحميل");
+      return;
+    }
+
+    const dataStr = JSON.stringify(usersList, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `users_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const refreshAll = () => {
+    fetchCounts();
+    fetchUsers();
+  };
+
+  const getRoleIcon = (role) => {
+    if (role === "investor") {
+      return <UserCheck className="w-4 h-4 text-green-600" />;
+    }
+    return <User className="w-4 h-4 text-blue-600" />;
+  };
+
+  const getRoleText = (role) => {
+    const roles = {
+      "investor": "مستثمر",
+      "admin": "مشرف",
+      "user": "مستخدم"
+    };
+    return roles[role] || role;
   };
 
   return (
-    <DashboardLayout>
-      <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">المشاريع</h1>
-            <p className="text-gray-600 text-sm">عرض وإدارة جميع المشاريع</p>
-          </div>
-          
-          <button
-            onClick={generatePDF}
-            className="mt-4 md:mt-0 px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <FaDownload className="text-lg" />
-            <span>تنزيل PDF</span>
-          </button>
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+            إحصائيات المستخدمين والمشرفين والمشاريع
+          </h1>
+          <div className="h-1 w-32 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
         </div>
 
-        {/* Stats Cards - Premium */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden relative"
-            >
-              <div className="p-6 relative z-10">
-                <div className="text-right">
-                  <span className="text-3xl font-bold text-gray-900 block mb-1">{stat.value}</span>
-                  <span className="text-gray-600 text-sm font-medium">{stat.title}</span>
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <AlertCircle className="w-6 h-6 text-red-600" />
                 </div>
+                <h3 className="text-xl font-bold text-gray-800">تأكيد الحذف</h3>
               </div>
-              <div className={`absolute top-0 right-0 w-full h-1 bg-gradient-to-r ${stat.color} transition-all duration-300 group-hover:h-1.5`}></div>
-              <div className={`absolute -bottom-8 -right-8 w-20 h-20 bg-gradient-to-r ${stat.color} opacity-5 rounded-full`}></div>
-            </div>
-          ))}
-        </div>
-
-        {/* Chart Card - Premium */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900">نمو المشاريع</h3>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-              <span className="text-sm text-gray-600">المشاريع الجديدة</span>
+              <p className="text-gray-600 mb-6">
+                هل أنت متأكد من حذف المستخدم <span className="font-semibold text-red-600">"{deleteConfirm.userName}"</span>؟ هذا الإجراء لا يمكن التراجع عنه.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={hideDeleteConfirm}
+                  className="px-6 py-2.5 text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors duration-200"
+                  disabled={deleteLoading[deleteConfirm.userId]}
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={deleteLoading[deleteConfirm.userId]}
+                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleteLoading[deleteConfirm.userId] && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
+                  {deleteLoading[deleteConfirm.userId] ? "جاري الحذف..." : "نعم، احذف"}
+                </button>
+              </div>
             </div>
           </div>
-          <div className="h-72">
-            <Line data={chartData} options={chartOptions} />
-          </div>
-        </div>
+        )}
 
-        {/* Quick Download - Premium */}
-        <div className="mb-10">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">خيارات التنزيل</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <button
-              onClick={exportProjects}
-              className="group bg-white rounded-2xl shadow-lg p-5 border border-gray-100 hover:border-emerald-200 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-xl flex items-center justify-center group-hover:from-emerald-200 group-hover:to-emerald-100 transition-all duration-300">
-                  <FaProjectDiagram className="text-2xl text-emerald-600" />
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-gray-900">المشاريع</div>
-                  <div className="text-sm text-gray-600">{projects.length} مشروع</div>
-                </div>
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-md">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-800 mb-1">تنبيه</h3>
+                <p className="text-red-700">{errorMessage}</p>
               </div>
-              <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
-                <FaDownload className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-              </div>
-            </button>
-            
-            <button
-              onClick={exportInvestors}
-              className="group bg-white rounded-2xl shadow-lg p-5 border border-gray-100 hover:border-violet-200 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-violet-100 to-violet-50 rounded-xl flex items-center justify-center group-hover:from-violet-200 group-hover:to-violet-100 transition-all duration-300">
-                  <FaMoneyCheckAlt className="text-2xl text-violet-600" />
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-gray-900">المستثمرين</div>
-                  <div className="text-sm text-gray-600">{investors.length} مستثمر</div>
-                </div>
-              </div>
-              <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-violet-50 transition-colors">
-                <FaDownload className="text-gray-400 group-hover:text-violet-600 transition-colors" />
-              </div>
-            </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Projects Grid - Premium */}
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-5">المشاريع الحالية</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 hover:shadow-xl hover:border-emerald-100 transition-all duration-300 group overflow-hidden"
-              >
-                {/* Status Badge */}
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                    project.status === 'نشط' 
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
-                  }`}>
-                    {project.status}
-                  </span>
-                  <span className="text-xs font-medium text-gray-500">{project.daysLeft} يوم</span>
-                </div>
-                
-                {/* Project Title */}
-                <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-1">{project.title}</h3>
-                
-                {/* Description */}
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.description}</p>
-                
-                {/* Progress Bar - Minimal Curve */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs text-gray-600 mb-1">
-                    <span>التقدم</span>
-                    <span className="font-semibold">{project.progress}%</span>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <Loader2 className="w-16 h-16 text-green-500 animate-spin mx-auto mb-4" />
+              <p className="text-lg text-gray-600 font-medium">جاري تحميل البيانات...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Statistics Cards */}
+        {!loading && !errorMessage && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {/* Users Card */}
+              <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-green-100 hover:border-green-300">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                      <Users className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500 font-medium mb-1">إجمالي المستخدمين</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800">{totalUsers}</p>
+                    </div>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${
-                        project.status === 'نشط' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-amber-400 to-amber-500'
-                      }`}
-                      style={{ width: `${project.progress}%` }}
-                    ></div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-pulse"></div>
                   </div>
                 </div>
-                
-                {/* Details */}
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500">الميزانية:</span>
-                    <span className="font-semibold text-gray-900">{project.budget}</span>
+              </div>
+
+              {/* Admins Card */}
+              <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-green-100 hover:border-green-300">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                      <Shield className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500 font-medium mb-1">إجمالي المشرفين</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800">{totalAdmins}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500">المالك:</span>
-                    <span className="font-semibold text-gray-900">{project.owner}</span>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
                   </div>
                 </div>
-                
-                {/* Bottom Border Effect */}
-                <div className="mt-5 pt-4 border-t border-gray-100">
-                  <button className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1.5 group/btn">
-                    <span>عرض التفاصيل</span>
-                    <svg className="w-3.5 h-3.5 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
+              </div>
+
+              {/* Projects Card */}
+              <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-green-100 hover:border-green-300">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                      <Briefcase className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500 font-medium mb-1">إجمالي المشاريع</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800">{totalProjects}</p>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Card */}
+              <div className="group bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-green-400">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-white bg-opacity-20 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                      <Database className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-green-50 font-medium mb-1">إجمالي الحسابات</p>
+                      <p className="text-3xl md:text-4xl font-bold text-white">{totalUsers + totalAdmins + totalProjects}</p>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-white bg-opacity-20 rounded-full overflow-hidden">
+                    <div className="h-full bg-white rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Users Table Section */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">قائمة المستخدمين</h2>
+                  <p className="text-gray-600 text-sm mt-1">إجمالي: {usersList.length} مستخدم</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={downloadCSV}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 font-medium rounded-lg transition-colors duration-200 border border-green-200"
+                  >
+                    <Download className="w-4 h-4" />
+                    CSV
+                  </button>
+                  <button
+                    onClick={downloadJSON}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium rounded-lg transition-colors duration-200 border border-blue-200"
+                  >
+                    <Download className="w-4 h-4" />
+                    JSON
                   </button>
                 </div>
               </div>
-            ))}
+
+              {/* Users Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700">الاسم</th>
+                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700">البريد الإلكتروني</th>
+                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700">الهاتف</th>
+                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700">الدور</th>
+                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {usersList.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="py-8 text-center text-gray-500">
+                          لا توجد بيانات للمستخدمين
+                        </td>
+                      </tr>
+                    ) : (
+                      usersList.map((user) => (
+                        <tr key={user._id} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
+                                <User className="w-5 h-5 text-green-600" />
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium text-gray-800">{user.name}</p>
+                                <p className="text-xs text-gray-500 mt-1">ID: {user._id?.substring(0, 8)}...</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2 justify-end">
+                              <span className="text-gray-700">{user.email}</span>
+                              <Mail className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2 justify-end">
+                              <span className="text-gray-700">{user.phone}</span>
+                              <Phone className="w-4 h-4 text-gray-400" />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2 justify-end">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                user.role === "investor" 
+                                  ? "bg-green-100 text-green-800" 
+                                  : "bg-blue-100 text-blue-800"
+                              }`}>
+                                {getRoleText(user.role)}
+                              </span>
+                              {getRoleIcon(user.role)}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex justify-end">
+                              <button
+                                onClick={() => showDeleteConfirm(user._id, user.name)}
+                                disabled={deleteLoading[user._id]}
+                                className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {deleteLoading[user._id] ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                                <span>حذف</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Refresh Button */}
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={refreshAll}
+                disabled={loading}
+                className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                <span>تحديث جميع البيانات</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

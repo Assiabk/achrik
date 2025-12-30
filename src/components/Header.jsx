@@ -35,10 +35,22 @@ export default function Header() {
               <span>معلومات</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#contact" className="px-5 py-2.5 text-gray-700 font-semibold hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 relative group">
-              <span>تواصل معنا</span>
+            
+            {/* NEW: Projects Needing Funding */}
+            <a 
+              href="/projects-needing-funding" 
+              className="px-5 py-2.5 text-gray-700 font-semibold hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 relative group flex items-center gap-2"
+            >
+              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <span>المشاريع المحتاجة للتمويل</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 group-hover:w-full transition-all duration-300"></span>
+              
+             
             </a>
+            
+           
             <a href="#ads" className="px-5 py-2.5 text-gray-700 font-semibold hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 relative group">
               <span>الإعلانات</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 group-hover:w-full transition-all duration-300"></span>
@@ -100,18 +112,25 @@ export default function Header() {
               <span>معلومات</span>
             </div>
           </a>
+          
+          {/* NEW: Projects Needing Funding - Mobile */}
           <a
-            href="#contact"
+            href="/projects-needing-funding"
             className="block px-4 py-3 text-gray-700 font-semibold hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all duration-200"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>تواصل معنا</span>
+            <div className="flex items-center gap-3 justify-between">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>المشاريع المحتاجة للتمويل</span>
+              </div>
+              
             </div>
           </a>
+          
+          
           <a
             href="#ads"
             className="block px-4 py-3 text-gray-700 font-semibold hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all duration-200"
@@ -123,15 +142,6 @@ export default function Header() {
               </svg>
               <span>الإعلانات</span>
             </div>
-          </a>
-          
-          {/* Mobile CTA */}
-          <a
-            href="#start"
-            className="block mx-4 mt-3 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold text-center rounded-lg shadow-md hover:shadow-xl transition-all duration-200"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            ابدأ الآن
           </a>
         </nav>
       </div>

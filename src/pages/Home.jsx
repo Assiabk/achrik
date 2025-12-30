@@ -4,6 +4,8 @@ import RegisterForm from "../components/RegisterForm";
 import InfoSection from "../components/InfoSection";
 import AdsSection from "../components/AdsSection";
 import Footer from "../components/Footer";
+import AddProject from "./AddProject";
+import Invest from "./Invest";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -13,6 +15,8 @@ export default function Home() {
       <RegisterForm/>
       <InfoSection/>
       <AdsSection/>
+      <AddProject/>
+      <Invest/>
       <Footer/>
       
     </div>
