@@ -37,7 +37,7 @@ export default function ProjectsNeedingFunding() {
   const fetchProjectsNeedingFunding = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/projects");
+      const res = await fetch("https://achrikmaana.com/api/projects");
       const data = await res.json();
       if (data.success) {
         // Filter projects that need funding
@@ -64,7 +64,7 @@ export default function ProjectsNeedingFunding() {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/projects/${projectId}/vote`, {
+      const res = await fetch(`https://achrikmaana.com/api/projects/${projectId}/vote`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ export default function ProjectsNeedingFunding() {
                   {project.projectImage?.url && (
                     <div className="h-48 overflow-hidden relative">
                       <img 
-                        src={`http://localhost:5000${project.projectImage.url}`} 
+                        src={`https://achrikmaana.com${project.projectImage.url}`} 
                         alt={project.projectName}
                         className="w-full h-full object-cover"
                       />

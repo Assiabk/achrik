@@ -24,7 +24,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 // Enhanced API Service
 const AdminApiService = {
-  baseUrl: 'http://localhost:5000/api',
+  baseUrl: 'https://achrikmaana.com/api',
   
   // Get all admins with better response handling
   async getAdmins() {

@@ -201,7 +201,7 @@ export default function AddProject() {
         formData.append('complianceFiles', file);
       });
 
-      const res = await fetch("http://localhost:5000/api/projects", {
+      const res = await fetch("https://achrikmaana.com/api/projects", {
         method: "POST",
         body: formData,
       });

@@ -138,7 +138,7 @@ export default function AddInvestment() {
     formData.append('file', file);
     
     try {
-      const response = await fetch('http://localhost:5000/api/upload/investment', {
+      const response = await fetch('https://achrikmaana.com/api/upload/investment', {
         method: 'POST',
         body: formData,
       });
@@ -261,7 +261,7 @@ export default function AddInvestment() {
       console.log("📤 Sending investment data:", investmentData);
       
       // Submit to backend
-      const res = await fetch("http://localhost:5000/api/investments", {
+      const res = await fetch("https://achrikmaana.com/api/investments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(investmentData),

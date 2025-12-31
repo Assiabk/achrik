@@ -35,7 +35,7 @@ export default function ProjectsList() {
       console.log("Using token:", token);
 
       // Fetch users
-      const usersResponse = await fetch("http://localhost:5000/api/users", {
+      const usersResponse = await fetch("https://achrikmaana.com/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const usersData = await usersResponse.json();
@@ -46,7 +46,7 @@ export default function ProjectsList() {
       }
 
       // Fetch admins
-      const adminsResponse = await fetch("http://localhost:5000/api/admins", {
+      const adminsResponse = await fetch("https://achrikmaana.com/api/admins", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const adminsData = await adminsResponse.json();
@@ -57,7 +57,7 @@ export default function ProjectsList() {
       }
 
       // Fetch projects
-      const projectsResponse = await fetch("http://localhost:5000/api/projects", {
+      const projectsResponse = await fetch("https://achrikmaana.com/api/projects", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const projectsData = await projectsResponse.json();
@@ -96,7 +96,7 @@ export default function ProjectsList() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/users", {
+      const response = await fetch("https://achrikmaana.com/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -145,7 +145,7 @@ export default function ProjectsList() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(`https://achrikmaana.com/api/users${userId}`, {
         method: "DELETE",
         headers: { 
           "Authorization": `Bearer ${token}`,

@@ -78,7 +78,7 @@ export default function Projects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/projects");
+      const res = await fetch("https://achrikmaana.com/api/projects");
       const data = await res.json();
       if (data.success) {
         setProjects(data.projects || []);
@@ -103,7 +103,7 @@ export default function Projects() {
       projectDetails: project.projectDetails || "",
       image: null
     });
-    setImagePreview(project.projectImage?.url ? `http://localhost:5000${project.projectImage.url}` : null);
+    setImagePreview(project.projectImage?.url ? `https://achrikmaana.com${project.projectImage.url}` : null);
     setShowEditModal(true);
   };
 
@@ -154,7 +154,7 @@ export default function Projects() {
       console.log("📦 Sending FormData with image:", editForm.image ? "YES" : "NO");
 
       // Use FormData endpoint
-      const res = await fetch(`http://localhost:5000/api/projects/${projectToEdit._id}/update-details`, {
+      const res = await fetch(`https://achrikmaana.com/api/projects/${projectToEdit._id}/update-details`, {
         method: "PUT",
         body: formData  // No Content-Type header needed for FormData
       });
@@ -190,7 +190,7 @@ export default function Projects() {
       
       console.log("🧪 Testing update with:", testData);
       
-      const res = await fetch(`http://localhost:5000/api/projects/${projectToEdit._id}/update`, {
+      const res = await fetch(`https://achrikmaana.com/api/projects/${projectToEdit._id}/update`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +232,7 @@ export default function Projects() {
       console.log("📦 Sending JSON update:", updateData);
 
       // Use the /update endpoint for JSON data
-      const res = await fetch(`http://localhost:5000/api/projects/${projectToEdit._id}/update`, {
+      const res = await fetch(`https://achrikmaana.com/api/projects/${projectToEdit._id}/update`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ export default function Projects() {
     if (!projectToDelete) return;
     
     try {
-      const res = await fetch(`http://localhost:5000/api/projects/${projectToDelete._id}`, {
+      const res = await fetch(`https://achrikmaana.com/api/projects/${projectToDelete._id}`, {
         method: "DELETE"
       });
       
@@ -349,7 +349,7 @@ export default function Projects() {
 
   const handleDownload = (fileUrl) => {
     if (fileUrl) {
-      window.open(`http://localhost:5000${fileUrl}`, '_blank');
+      window.open(`https://achrikmaana.com${fileUrl}`, '_blank');
     }
   };
 
@@ -542,7 +542,7 @@ export default function Projects() {
                 {project.projectImage?.url && (
                   <div className="h-48 overflow-hidden">
                     <img 
-                      src={`http://localhost:5000${project.projectImage.url}`} 
+                      src={`https://achrikmaana.com${project.projectImage.url}`} 
                       alt={project.projectName}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -717,7 +717,7 @@ export default function Projects() {
                 {selectedProject.projectImage?.url && (
                   <div className="mb-6">
                     <img 
-                      src={`http://localhost:5000${selectedProject.projectImage.url}`} 
+                      src={`https://achrikmaana.com${selectedProject.projectImage.url}`} 
                       alt={selectedProject.projectName}
                       className="w-full h-64 object-cover rounded-2xl shadow-lg"
                     />

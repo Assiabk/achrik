@@ -14,6 +14,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+const BASE_URL = process.env.BASE_URL;
 
 // Debug middleware to log requests
 app.use((req, res, next) => {
@@ -23,6 +24,24 @@ app.use((req, res, next) => {
   }
   console.log('📋 Content-Type:', req.headers['content-type']);
   next();
+});
+
+const LOG_PATH = '/home/rwkbuchx/logs/passenger.log';
+
+// Simple log function
+const log = (message) => {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(LOG_PATH, `[${timestamp}] ${message}\n`);
+};
+
+// Log every incoming request
+app.use((req, res, next) => {
+  log(`Request: ${req.method} ${req.originalUrl} - Body: ${JSON.stringify(req.body)}`);
+  next();
+});
+app.use((err, req, res, next) => {
+  log(`Error: ${err.message}\nStack: ${err.stack}`);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 /* =======================
@@ -640,7 +659,7 @@ app.post("/api/auth/register", async (req, res) => {
     const newUser = new User({ name, phone, email, password, verificationToken });
     await newUser.save();
 
-    const verifyUrl = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    const verifyUrl = `${BASE_URL}/api/auth/verify/${verificationToken}`;
 
     await transporter.sendMail({
       from: `"Ashrik Platform" <${process.env.EMAIL_USER}>`,

@@ -24,8 +24,9 @@ export default function AdsManagement() {
     order: 0
   });
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+  const API_URL = process.env.REACT_APP_API_URL || "https://achrikmaana.com/api";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://achrikmaana.com";
+  
 
   // Function to get full image URL
   const getFullImageUrl = (imageUrl) => {

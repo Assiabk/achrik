@@ -6,7 +6,7 @@ export default function AdsSection() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+    const API_URL = process.env.REACT_APP_API_URL || "https://achrikmaana.com/api/";
 
     // Fixed: Clean image URL function - only prepend if needed
     const getCleanImageUrl = (imageUrl) => {
@@ -15,24 +15,34 @@ export default function AdsSection() {
         console.log("Original imageUrl:", imageUrl);
         
         // If URL is already doubled (has duplicate backend URL), fix it
-        if (imageUrl.includes('http://localhost:5000http://localhost:5000')) {
-            const cleanUrl = imageUrl.replace('http://localhost:5000http://localhost:5000', 'http://localhost:5000');
-            console.log("Fixed doubled URL:", cleanUrl);
-            return cleanUrl;
-        }
-        
+if (imageUrl.includes('https://achrikmaana.comhttps://achrikmaana.com')) {
+  const cleanUrl = imageUrl.replace('https://achrikmaana.comhttps://achrikmaana.com', 'https://achrikmaana.com');
+  console.log("Fixed doubled URL:", cleanUrl);
+  return cleanUrl;
+}
+
+// If URL still has old localhost, replace it
+if (imageUrl.includes('http://localhost:5000')) {
+  const cleanUrl = imageUrl.replace('http://localhost:5000', 'https://achrikmaana.com');
+  console.log("Replaced localhost with domain:", cleanUrl);
+  return cleanUrl;
+}
+
         // If URL already has http://localhost:5000, return as is
         if (imageUrl.startsWith('http://localhost:5000')) {
-            console.log("Already has full URL, returning:", imageUrl);
-            return imageUrl;
-        }
+          const updatedUrl = imageUrl.replace('http://localhost:5000', 'https://achrikmaana.com');
+          console.log("Updated localhost URL to domain:", updatedUrl);
+          return updatedUrl;
+      }
+      
         
-        // If it's a relative path starting with /uploads, prepend backend URL
-        if (imageUrl.startsWith('/uploads')) {
-            const fullUrl = `http://localhost:5000${imageUrl}`;
-            console.log("Relative path, converted to:", fullUrl);
-            return fullUrl;
-        }
+      // If it's a relative path starting with /uploads, prepend backend URL
+if (imageUrl.startsWith('/uploads')) {
+  const fullUrl = `https://achrikmaana.com${imageUrl}`;
+  console.log("Relative path, converted to:", fullUrl);
+  return fullUrl;
+}
+
         
         // Default return
         console.log("Returning as is:", imageUrl);
@@ -215,67 +225,68 @@ export default function AdsSection() {
             <div className="relative overflow-hidden rounded-3xl shadow-2xl group">
               <div className="relative h-96 md:h-[500px]">
                 {ads.length > 0 && ads[currentSlide] && (
-                  <>
-                    <img 
-                      src={ads[currentSlide].imageUrl} 
-                      alt={ads[currentSlide].title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      onError={(e) => {
-                        console.error("❌ Image failed to load:", ads[currentSlide].imageUrl);
-                        console.error("Trying fallback image...");
-                        
-                        // Try to fix URL and reload
-                        const originalUrl = ads[currentSlide].imageUrl;
-                        let fixedUrl = originalUrl;
-                        
-                        // Fix doubled URL
-                        if (originalUrl.includes('http://localhost:5000http://localhost:5000')) {
-                            fixedUrl = originalUrl.replace('http://localhost:5000http://localhost:5000', 'http://localhost:5000');
-                            console.log("Fixed URL:", fixedUrl);
-                        }
-                        // Fix if missing http://
-                        else if (originalUrl.startsWith('localhost:5000')) {
-                            fixedUrl = `http://${originalUrl}`;
-                            console.log("Added http:// to URL:", fixedUrl);
-                        }
-                        // Fix if missing port
-                        else if (originalUrl.startsWith('http://localhost/uploads')) {
-                            fixedUrl = originalUrl.replace('http://localhost/uploads', 'http://localhost:5000/uploads');
-                            console.log("Added port to URL:", fixedUrl);
-                        }
-                        
-                        // Try fixed URL first
-                        if (fixedUrl !== originalUrl) {
-                            e.target.src = fixedUrl;
-                        } else {
-                            // Fallback to placeholder
-                            e.target.src = "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=500&fit=crop";
-                        }
-                      }}
-                      onLoad={() => {
-                        console.log("✅ Image loaded successfully:", ads[currentSlide].imageUrl);
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                    
-                    {/* Content Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
-                      <h3 className="text-3xl md:text-5xl font-black mb-4 animate-fade-in">
-                        {ads[currentSlide].title}
-                      </h3>
-                      <p className="text-lg md:text-xl text-gray-200 max-w-3xl leading-relaxed animate-fade-in">
-                        {ads[currentSlide].description}
-                      </p>
-                      <a
-                        href={ads[currentSlide].buttonLink || "#"}
-                        target={ads[currentSlide].buttonLink?.startsWith('http') ? "_blank" : undefined}
-                        rel={ads[currentSlide].buttonLink?.startsWith('http') ? "noopener noreferrer" : undefined}
-                        className="inline-block mt-6 px-8 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 shadow-lg"
-                      >
-                        {ads[currentSlide].buttonText || "اعرف المزيد"}
-                      </a>
-                    </div>
-                  </>
+                 <>
+                 <img 
+                   src={ads[currentSlide].imageUrl} 
+                   alt={ads[currentSlide].title}
+                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                   onError={(e) => {
+                     console.error("❌ Image failed to load:", ads[currentSlide].imageUrl);
+                     console.error("Trying fallback image...");
+               
+                     let fixedUrl = ads[currentSlide].imageUrl;
+               
+                     // Fix doubled URL
+                     if (fixedUrl.includes('http://localhost:5000http://localhost:5000')) {
+                       fixedUrl = fixedUrl.replace('http://localhost:5000http://localhost:5000', 'https://achrikmaana.com');
+                       console.log("Fixed doubled URL:", fixedUrl);
+                     }
+               
+                     // Replace any leftover localhost URLs
+                     else if (fixedUrl.includes('http://localhost:5000')) {
+                       fixedUrl = fixedUrl.replace('http://localhost:5000', 'https://achrikmaana.com');
+                       console.log("Replaced localhost with domain:", fixedUrl);
+                     }
+               
+                     // Replace relative /uploads paths with full domain
+                     else if (fixedUrl.startsWith('/uploads')) {
+                       fixedUrl = `https://achrikmaana.com${fixedUrl}`;
+                       console.log("Converted relative path to full URL:", fixedUrl);
+                     }
+               
+                     // Try fixed URL first
+                     if (fixedUrl !== ads[currentSlide].imageUrl) {
+                       e.target.src = fixedUrl;
+                     } else {
+                       // Fallback to placeholder
+                       e.target.src = "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=500&fit=crop";
+                     }
+                   }}
+                   onLoad={() => {
+                     console.log("✅ Image loaded successfully:", ads[currentSlide].imageUrl);
+                   }}
+                 />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+               
+                 {/* Content Overlay */}
+                 <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
+                   <h3 className="text-3xl md:text-5xl font-black mb-4 animate-fade-in">
+                     {ads[currentSlide].title}
+                   </h3>
+                   <p className="text-lg md:text-xl text-gray-200 max-w-3xl leading-relaxed animate-fade-in">
+                     {ads[currentSlide].description}
+                   </p>
+                   <a
+                     href={ads[currentSlide].buttonLink || "#"}
+                     target={ads[currentSlide].buttonLink?.startsWith('http') ? "_blank" : undefined}
+                     rel={ads[currentSlide].buttonLink?.startsWith('http') ? "noopener noreferrer" : undefined}
+                     className="inline-block mt-6 px-8 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-full font-bold text-white transition-all duration-300 hover:scale-105 shadow-lg"
+                   >
+                     {ads[currentSlide].buttonText || "اعرف المزيد"}
+                   </a>
+                 </div>
+               </>
+               
                 )}
               </div>
 

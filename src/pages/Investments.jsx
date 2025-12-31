@@ -86,7 +86,7 @@ export default function Investments() {
     try {
       setLoading(true);
       
-      const res = await fetch("http://localhost:5000/api/investments");
+      const res = await fetch("https://achrikmaana.com/api/investments");
       
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -113,7 +113,7 @@ export default function Investments() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/investments/stats");
+      const res = await fetch("https://achrikmaana.com/api/investments/stats");
       
       if (!res.ok) return;
       
@@ -203,7 +203,7 @@ export default function Investments() {
     if (!investmentToDelete) return;
     
     try {
-      const res = await fetch(`http://localhost:5000/api/investments/${investmentToDelete._id}`, {
+      const res = await fetch(`https://achrikmaana.com/api/investments/${investmentToDelete._id}`, {
         method: "DELETE"
       });
       
@@ -236,7 +236,7 @@ export default function Investments() {
     if (!investmentToUpdate || !newStatus) return;
     
     try {
-      const res = await fetch(`http://localhost:5000/api/investments/${investmentToUpdate._id}/status`, {
+      const res = await fetch(`https://achrikmaana.com/api/investments/${investmentToUpdate._id}/status`, {
         method: "PUT",
         headers: { 
           'Content-Type': 'application/json'
@@ -271,7 +271,7 @@ export default function Investments() {
 
   const handleDownload = (fileUrl) => {
     if (fileUrl) {
-      window.open(`http://localhost:5000${fileUrl}`, '_blank');
+      window.open(`https://achrikmaana.com${fileUrl}`, '_blank');
     }
   };
 
